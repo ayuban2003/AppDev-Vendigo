@@ -8,13 +8,13 @@ app.secret_key = '13493129d0e6e4eb1604d4ee7e4137e80f47504a96e05ecdbee0eca0f7e37b
 @app.route('/')
 @app.route('/home')
 def home():
-    if 'has_access' in session:
-        if session['has_access']:
-            return render_template('index.html', has_access=True)
-        else:
-            return render_template('index.html', has_access=False)
-    else:
-        return render_template('index.html', has_access=False)
+    # if 'has_access' in session:
+    #     if session['has_access']:
+    #         return render_template('index.html', has_access=True)
+    #     else:
+    #         return render_template('index.html', has_access=False)
+    # else:
+    #     return render_template('index.html', has_access=False)
     
 @app.route('/access_dashboard', methods=['POST'])
 def access_dashboard():
