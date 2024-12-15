@@ -15,6 +15,7 @@ def home():
     #         return render_template('index.html', has_access=False)
     # else:
     #     return render_template('index.html', has_access=False)
+    return render_template('index.html')
     
 @app.route('/access_dashboard', methods=['POST'])
 def access_dashboard():
