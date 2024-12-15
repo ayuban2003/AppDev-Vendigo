@@ -1,9 +1,9 @@
 All of the HTML Files has templating already.
 Utilize the styles-base.css, if you are working on index.html, order.html,  payment.html,  purchase.html, receipt.html.
 Utilize the styles-dashboard.css, if you are working on admin-dashboard.html.
+Run thru app.py
 
 Scale is a 3.5 Inch Screen. So, develop the website in 320x480 or in Zoom Level on Browser (120% to 150%).
-
 Design: Simple as possible but not very basic
 
 Instructions:
