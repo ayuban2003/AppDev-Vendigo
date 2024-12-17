@@ -8,26 +8,5 @@
 </div>
 
 <script>
-    document.addEventListener('keydown', (event) => {
-      if (event.key.length === 1 && event.key >= '0' && event.key <= '9') {
-        let enteredCombination = event.key;
-
-        $.ajax({
-          url: '/access_dashboard',
-          type: 'POST',
-          data: { key: enteredCombination },
-          success: (response) => {
-            if (response === 'granted') {
-              window.location.href = '/admin-dashboard';
-            } else {
-              alert('Incorrect key combination');
-            }
-          },
-          error: (error) => {
-            console.error('Error sending request:', error);
-          }
-        });
-      }
-    });
 </script>
 {% endblock %}

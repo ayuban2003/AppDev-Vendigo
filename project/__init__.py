@@ -1,38 +1,23 @@
-from flask import Flask, render_template, url_for, request, redirect, session
-import datetime
+from flask import Flask, render_template, url_for, request, redirect
+import mysql.connector
 
 app = Flask(__name__)
 app.secret_key = '13493129d0e6e4eb1604d4ee7e4137e80f47504a96e05ecdbee0eca0f7e37b8b' # $AppDevVendigo2024
+
+def connectDB():
+    DB = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        database="vendigodb"
+    )
+
+    return DB
 
 # General User
 @app.route('/')
 @app.route('/home')
 def home():
-    # if 'has_access' in session:
-    #     if session['has_access']:
-    #         return render_template('index.html', has_access=True)
-    #     else:
-    #         return render_template('index.html', has_access=False)
-    # else:
-    #     return render_template('index.html', has_access=False)
     return render_template('index.html')
-    
-@app.route('/access_dashboard', methods=['POST'])
-def access_dashboard():
-    correct_combination = session.get('correct_combination')
-    if request.form['key'] == correct_combination:
-        session['has_access'] = True
-        return redirect(url_for('dashboard'))
-    else:
-        return 'Incorrect combination'
-    
-@app.before_request
-def generate_combination():
-    if 'correct_combination' not in session:
-        # Generate a new combination based on current date and time
-        today = datetime.datetime.now()
-        combination = f"{today.day}{today.hour}10"
-        session['correct_combination'] = combination
 
 @app.route('/order')
 def order():
@@ -53,7 +38,35 @@ def receipt():
 # Administrator
 @app.route('/dashboard')
 def dashboard():
-    if 'has_access' in session and session['has_access']:
-        return render_template('admin-dashboard.html')
-    else:
-        return redirect(url_for('home'))
+    return render_template('admin-dashboard.html')
+
+@app.route('/fetch_table_data')
+def fetch_table_data():
+    table_name = request.args.get('table_name')
+    columns = []
+    rows = []
+    if table_name:
+        connect = connectDB()
+        cursor = connect.cursor()
+        cursor.execute("SELECT * FROM "+table_name)
+        result = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        for row in result:
+            rows.append(list(row))
+
+    return {'columns': columns, 'rows': rows}
+
+@app.route('/submit_data', methods=['POST'])
+def submit_data():
+    table_name = request.form.get('table_name')
+    data = {key: value for key, value in request.form.items() if key != 'table_name'}
+    if table_name and data:
+        connect = connectDB()
+        cursor = connect.cursor()
+        columns = ', '.join(data.keys())
+        placeholders = ', '.join(['%s'] * len(data))
+        sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        cursor.execute(sql, list(data.values()))
+        connect.commit()
+        connect.close()
+    return redirect(url_for('dashboard'))

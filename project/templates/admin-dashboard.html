@@ -2,7 +2,288 @@
 
 {% block stylesheet %}<link rel="stylesheet" href="{{ url_for('static', filename="styles-dashboard.css")}}">{% endblock %}
 
-{% block title %}{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block body %}
+<div class="dashboard-container">
+    <div class="top-bar">
+        <h1>Dashboard</h1>
+        <button class="logout">Logout</button>
+    </div>
+    <div class="content">
+        <div class="navigation">
+            <ul>
+                <li><a href="#" class="selected" data-table="products">Products</a></li>
+                <li><a href="#" data-table="paymethods">Payment Methods</a></li>
+            </ul>
+        </div>
+        <div class="table-container">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        {% for column in columns %}
+                        <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if rows %}
+                    {% for row in rows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="{{ columns|length }}" class="empty-table">No data available</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <div class="inputs-container">
+                <div class="input-group">
+                    {% for column in columns %}
+                    {% if "id" not in column|lower %}
+                    <div class="input-item">
+                        <label for="{{ column }}">{{ column }}</label>
+                        <input type="text" id="{{ column }}" name="{{ column }}">
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="buttons-container">
+                <button class="add-button">Add</button>
+                <button class="remove-button">Remove</button>
+                <button class="modify-button">Modify</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.navigation a');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const selectedLink = document.querySelector('.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                this.classList.add('selected');
+
+                fetchTableData(this.dataset.table);
+            });
+        });
+
+        fetchTableData(navLinks[0].dataset.table);
+    });
+
+    function fetchTableData(table_name) {
+        fetch('{{ url_for("fetch_table_data") }}?table_name=' + table_name)
+            .then(response => response.json())
+            .then(data => {
+                const columns = data.columns;
+                const rows = data.rows;
+
+                // Populate table headers
+                const thead = document.querySelector('#data-table thead tr');
+                thead.innerHTML = '';
+                columns.forEach(column => {
+                    const th = document.createElement('th');
+                    th.textContent = column;
+                    thead.appendChild(th);
+                });
+
+                // Populate table rows
+                const tbody = document.querySelector('#data-table tbody');
+                tbody.innerHTML = '';
+                if (rows.length > 0) {
+                    rows.forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.textContent = 'No data available';
+                    td.colSpan = columns.length;
+                    td.className = 'empty-table';
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                }
+
+                // Populate inputs
+                const inputsContainer = document.querySelector('.inputs-container .input-group');
+                inputsContainer.innerHTML = '';
+                columns.forEach(column => {
+                    if (!column.toLowerCase().includes('id')) {
+                        const inputItem = document.createElement('div');
+                        inputItem.className = 'input-item';
+
+                        const label = document.createElement('label');
+                        label.for = column;
+                        label.textContent = column;
+                        inputItem.appendChild(label);
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.id = column;
+                        input.name = column;
+                        inputItem.appendChild(input);
+
+                        inputsContainer.appendChild(inputItem);
+                    }
+                });
+            });
+    }
+</script>
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #efefef;
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        height: 98vh;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1px;
+        background-color: #ffffff;
+        border-radius: 12px 12px 0px 0px;
+    }
+
+    .top-bar > h1 {
+        margin-left: 1rem;
+    }
+
+    .logout {
+        background-color: #4CAF50;
+        color: white;
+        margin-right: 1rem;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .logout:hover {
+        background-color: #45a049;
+    }
+
+    .content {
+        display: flex;
+        flex-grow: 1;
+    }
+
+    .navigation {
+        width: 200px;
+        background-color: #8d8d8d;
+        padding: 10px;
+    }
+
+    .navigation ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .navigation a {
+        display: block;
+        text-decoration: none;
+        color: #1b1b1b;
+        padding: 8px 10px;
+    }
+
+    .navigation a:hover {
+        background-color: #7f7f7f;
+    }
+
+    .navigation a.selected {
+        background-color: #cbcbcb;
+    }
+
+    .table-container {
+        flex-grow: 1;
+        padding: 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+        width: 1%;
+    }
+
+    .empty-table {
+        text-align: center;
+        color: #999;
+    }
+
+    .inputs-container {
+        margin-top: 20px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .input-item {
+        display: flex;
+        flex-direction: column;
+        width: 10rem;
+    }
+
+    .input-item label {
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .buttons-container {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .buttons-container button {
+        padding: 10px 32px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #007BFF;
+        color: white;
+    }
+
+    .buttons-container button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
 {% endblock %}
