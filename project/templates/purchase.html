@@ -9,8 +9,33 @@
             <h1>Purchase</h1>
         </div>
         <div class="content">
-            <!-- Content goes here -->
+            <div class="total-price">
+                Total: <span id="total-price-value">0</span>
+            </div>
+            <div class="payment-method">
+                Payment Method: <span id="payment-method-value">Cash</span>
+            </div>
+            <div class="buttons-container">
+                <button id="cancel-purchase">Cancel</button>
+                <button id="proceed-purchase">Proceed</button>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch total price
+        fetch('/get_total_price')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('total-price-value').textContent = data.total_price.toFixed(2);
+            });
+
+        // Proceed to receipt page
+        document.getElementById('proceed-purchase').addEventListener('click', function() {
+            window.location.href = '/receipt';
+        });
+    });
+</script>
 {% endblock %}
