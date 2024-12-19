@@ -53,6 +53,7 @@ def fetch_table_data():
         columns = [desc[0] for desc in cursor.description]
         for row in result:
             rows.append(list(row))
+        connect.close()
 
     return {'columns': columns, 'rows': rows}
 
@@ -67,6 +68,34 @@ def submit_data():
         placeholders = ', '.join(['%s'] * len(data))
         sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
         cursor.execute(sql, list(data.values()))
+        connect.commit()
+        connect.close()
+    return redirect(url_for('dashboard'))
+
+@app.route('/modify_data', methods=['POST'])
+def modify_data():
+    table_name = request.form.get('table_name')
+    data = {key: value for key, value in request.form.items() if key not in ['table_name', 'id']}
+    record_id = request.form.get('id')
+    if table_name and data and record_id:
+        connect = connectDB()
+        cursor = connect.cursor()
+        set_clause = ', '.join([f"{key}=%s" for key in data.keys()])
+        sql = f"UPDATE {table_name} SET {set_clause} WHERE id=%s"
+        cursor.execute(sql, list(data.values()) + [record_id])
+        connect.commit()
+        connect.close()
+    return redirect(url_for('dashboard'))
+
+@app.route('/remove_data', methods=['POST'])
+def remove_data():
+    table_name = request.form.get('table_name')
+    record_id = request.form.get('id')
+    if table_name and record_id:
+        connect = connectDB()
+        cursor = connect.cursor()
+        sql = f"DELETE FROM {table_name} WHERE id=%s"
+        cursor.execute(sql, (record_id,))
         connect.commit()
         connect.close()
     return redirect(url_for('dashboard'))
