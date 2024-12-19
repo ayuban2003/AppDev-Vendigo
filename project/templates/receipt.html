@@ -6,10 +6,20 @@
 <div class="screen">
     <div class="container">
         <div class="top-bar">
-            <h1>Receipt/h1>
+            <h1>Receipt</h1>
         </div>
         <div class="content">
-            <!-- Content goes here -->
+            <div class="receipt-details">
+                <h2>Receipt</h2>
+                <ul>
+                    {% for item in items %}
+                    <li>{{ item.name }} x {{ item.quantity }} - ${{ item.price * item.quantity }}</li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <p>Total: ${{ total_price }}</p>
+                <p>Payment Method: {{ payment_method }}</p>
+            </div>
         </div>
     </div>
 </div>
