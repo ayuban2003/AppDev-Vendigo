@@ -6,11 +6,57 @@
 <div class="screen">
     <div class="container">
         <div class="top-bar">
-            <h1>Receipt/h1>
+            <h1>Receipt</h1>
         </div>
         <div class="content">
-            <!-- Content goes here -->
+            <div id="receipt-container">
+                </div>
+            <div class="total-price">
+                Total: <span id="total-price-value">0</span>
+            </div>
+            <div class="payment-method">
+                Payment Method: <span id="payment-method-value">Cash</span>
+            </div>
+            <button id="print-receipt">Print</button>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch receipt data
+        fetch('/get_receipt_data')
+            .then(response => response.json())
+            .then(data => {
+                const receiptContainer = document.getElementById('receipt-container');
+                const totalPriceValue = document.getElementById('total-price-value');
+                const paymentMethodValue = document.getElementById('payment-method-value');
+                let totalPrice = 0;
+
+                data.orders.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'receipt-item';
+
+                    const itemName = document.createElement('div');
+                    itemName.textContent = item.Product;
+                    itemDiv.appendChild(itemName);
+
+                    const itemPrice = document.createElement('div');
+                    itemPrice.textContent = `$${item.Price.toFixed(2)}`;
+                    itemDiv.appendChild(itemPrice);
+
+                    receiptContainer.appendChild(itemDiv);
+                    totalPrice += item.Price;
+                });
+
+                totalPriceValue.textContent = totalPrice.toFixed(2);
+                paymentMethodValue.textContent = data.payment_method || 'Cash';
+            });
+
+        // Print receipt
+        document.getElementById('print-receipt').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
 {% endblock %}
