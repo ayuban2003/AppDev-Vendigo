@@ -23,6 +23,10 @@ def home():
 def order():
     return render_template('order.html')
 
+@app.route('/submit_order')
+def submit_order():
+    return render_template('order.html')
+
 @app.route('/payment')
 def payment():
     return render_template('payment.html')

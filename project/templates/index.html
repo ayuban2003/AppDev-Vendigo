@@ -9,8 +9,66 @@
             <h1>Home</h1>
         </div>
         <div class="content">
-            <!-- Content goes here -->
+            <div id="item-container" class="grid-container">
+                <!-- Product and Price will be populated here -->
+            </div>
+            <input id="input-text" type="text" style="width: 60%; margin: 0 auto;">
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('{{ url_for("fetch_table_data") }}?table_name=products')
+            .then(response => response.json())
+            .then(data => {
+                const itemContainer = document.getElementById('item-container');
+                itemContainer.innerHTML = '';
+
+                data.rows.forEach((row, index) => {
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'product-item';
+
+                    const idDiv = document.createElement('div');
+                    idDiv.textContent = `(${index + 1})`;
+                    productDiv.appendChild(idDiv);
+
+                    const productName = document.createElement('div');
+                    productName.textContent = row[1];
+                    productDiv.appendChild(productName);
+
+                    const productPrice = document.createElement('div');
+                    productPrice.textContent = `PHP ${row[2]}`;
+                    productDiv.appendChild(productPrice);
+
+                    itemContainer.appendChild(productDiv);
+                });
+
+                const inputText = document.getElementById('input-text');
+                inputText.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        const id = Number(inputText.value);
+                        fetch('{{ url_for("submit_order") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams({
+                                id,
+                                table_name: 'orders'
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Successfully added to order list');
+                                } else {
+                                    alert('Failed to add to order list');
+                                }
+                            });
+                    }
+                });
+            });
+    });
+</script>
 {% endblock %}
